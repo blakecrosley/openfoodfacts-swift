@@ -1,33 +1,38 @@
-// swift-tools-version: 5.9
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
+// swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
     name: "OpenFoodFactsSDK",
+    defaultLocalization: "en",
     platforms: [
-        .iOS(.v16)
+        // Keep iOS 14+ or iOS 15+ 
+        .iOS(.v14),
+        // Add macOS if you want to build on macOS
+        .macOS(.v12)
     ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "OpenFoodFactsSDK",
-            targets: ["OpenFoodFactsSDK"]),
+            targets: ["OpenFoodFactsSDK"]
+        )
     ],
     dependencies: [
-        .package(url: "https://github.com/hrabkin/BarcodeView.git", branch: "master"),
-        .package(url: "https://github.com/TimOliver/TOCropViewController.git", from: "2.6.1")
+        // Crop library for iOS only
+        // We'll conditionally exclude for macOS in the target
+        .package(url: "https://github.com/TimOliver/TOCropViewController.git", from: "2.6.0")
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "OpenFoodFactsSDK",
-            dependencies: ["BarcodeView", "TOCropViewController"]
-        ),
-        .testTarget(
-            name: "OpenFoodFactsSDK-iosTests",
-            dependencies: ["OpenFoodFactsSDK"]
-        ),
+            dependencies: [
+                // Condition: Only link TOCropViewController on iOS
+                .product(
+                    name: "TOCropViewController",
+                    package: "TOCropViewController",
+                    condition: .when(platforms: [.iOS])
+                )
+            ],
+            path: "Sources"
+        )
     ]
 )
